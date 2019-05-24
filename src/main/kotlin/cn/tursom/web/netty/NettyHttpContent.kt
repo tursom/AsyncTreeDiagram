@@ -157,7 +157,7 @@ object RequestParser {
             } catch (e: Exception) {
             }
             else -> // 不支持其它方法
-                throw MethodNotSupportedException("") // 这是个自定义的异常, 可删掉这一行
+                throw Exception("") // 这是个自定义的异常, 可删掉这一行
         }
 
         return parmMap

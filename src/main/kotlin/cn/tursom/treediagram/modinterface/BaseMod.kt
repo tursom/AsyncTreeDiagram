@@ -10,8 +10,12 @@ import java.net.URLEncoder
 import java.util.logging.Level
 import java.util.logging.Logger
 
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 @NoBlocking
-abstract class BaseMod(val description: String = "") {
+abstract class BaseMod(
+    val description: String = "",
+    val help: () -> String = { "" }
+) {
 
     /**
      * 模组私有目录
@@ -83,14 +87,14 @@ abstract class BaseMod(val description: String = "") {
         get() = URLEncoder.encode(this, "utf-8")
 
     override fun toString(): String {
-        return if (description.isEmpty()) super.toString() else "${super.toString()}: $description"
+        return if (description.isEmpty()) modName else "$modName: $description"
     }
 
     companion object {
         @JvmStatic
         val gson = Gson()
         @JvmStatic
-        val logger = Logger.getLogger("Mod Logger")!!
+        val logger = Logger.getLogger("ModLogger")!!
     }
 }
 

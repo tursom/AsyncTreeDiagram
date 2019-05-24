@@ -28,7 +28,7 @@ class SuspendRouter<T> {
         value: T?,
         onDestroy: ((oldValue: T) -> Unit)? = null
     ) {
-        val routeList = route.split('/').drop(0)
+        val routeList = route.split('?')[0].split('/').drop(0)
         var routeNode = rootNode
         var r: String
         var index = 0
@@ -90,7 +90,7 @@ class SuspendRouter<T> {
         val list = ArrayList<Pair<String, String>>()
         return suspendCoroutine { cont ->
             threadPool.execute {
-                cont.resume(rootNode[route.split('/'), list]?.value to list)
+                cont.resume(rootNode[route.split('?')[0].split('/'), list]?.value to list)
             }
         }
     }
@@ -105,11 +105,15 @@ class SuspendRouter<T> {
             return
         }
 
-        stringBuilder.append("$indentation/${node.route}${if (node.value != null) "    ${node.value}" else ""}\n")
+        if (indentation.isNotEmpty()) {
+            stringBuilder.append(indentation)
+            stringBuilder.append("- ")
+        }
+        stringBuilder.append("${node.singleRoute}${if (node.value != null) "    ${node.value}" else ""}\n")
 
         if (node is SuspendAnyRouteNode) return
 
-        val subIndentation = "$indentation|- "
+        val subIndentation = if (indentation.isEmpty()) "|" else "$indentation  |"
 
         node.subRouterMap.forEach { (_, u) ->
             toString(u, stringBuilder, subIndentation)
@@ -117,7 +121,7 @@ class SuspendRouter<T> {
         node.placeholderRouterList?.forEach {
             toString(it, stringBuilder, subIndentation)
         }
-        toString(node.wildSubRouter ?: return, stringBuilder, indentation)
+        toString(node.wildSubRouter ?: return, stringBuilder, subIndentation)
         return
     }
 
@@ -311,11 +315,14 @@ open class SuspendRouteNode<T>(
         }
         return stringBuilder.toString()
     }
+
+    open val singleRoute
+        get() = "/$route"
 }
 
 class SuspendPlaceholderRouteNode<T>(
     route: List<String>,
-    startIndex: Int = 0,
+    private val startIndex: Int = 0,
     endIndex: Int = startIndex + route.matchLength(startIndex),
     value: T? = null
 ) : SuspendRouteNode<T>(route, endIndex - 1, value) {
@@ -329,6 +336,16 @@ class SuspendPlaceholderRouteNode<T>(
         startIndex: Int
     ): Pair<Boolean, Int> =
         (size == route.matchLength(startIndex)) to size
+
+    override val singleRoute: String
+        get() {
+            val sb = StringBuilder()
+            for (i in startIndex..index) {
+                sb.append("/")
+                sb.append(routeList[i])
+            }
+            return sb.toString()
+        }
 
     companion object {
         @JvmStatic

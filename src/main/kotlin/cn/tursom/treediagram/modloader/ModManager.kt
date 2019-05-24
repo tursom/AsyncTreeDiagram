@@ -16,7 +16,7 @@ import kotlin.collections.HashSet
 class ModManager(private val router: SuspendRouter<BaseMod>) {
     private val logger = Logger.getLogger("ModManager")!!
     private val systemModMap = ConcurrentHashMap<String, BaseMod>()
-    private val userModMapMap: Hashtable<String, Hashtable<String, BaseMod>> = Hashtable()
+    private val userModMapMap: Hashtable<String, ConcurrentHashMap<String, BaseMod>> = Hashtable()
 
     init {
         //加载系统模组
@@ -33,7 +33,8 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 cn.tursom.treediagram.basemod.Login(),
                 cn.tursom.treediagram.basemod.Close(),
                 cn.tursom.treediagram.basemod.LoadedMod(),
-                cn.tursom.treediagram.basemod.RouterTree()
+                cn.tursom.treediagram.basemod.RouterTree(),
+                cn.tursom.treediagram.basemod.ModInfo()
             ).forEach {
                 loadMod(it)
             }
@@ -59,6 +60,15 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
             }
         }
         return pathSet
+    }
+
+    fun findMod(modName: String, user: String?): BaseMod? {
+        val modMap = if (user != null) {
+            userModMapMap[user]
+        } else {
+            systemModMap
+        } ?: return null
+        return modMap[modName]
     }
 
     /**
@@ -113,7 +123,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
 
         //将模组的信息加载到系统中
         val userModMap = (userModMapMap[user] ?: run {
-            val modMap = Hashtable<String, BaseMod>()
+            val modMap = ConcurrentHashMap<String, BaseMod>()
             userModMapMap[user] = modMap
             modMap
         })

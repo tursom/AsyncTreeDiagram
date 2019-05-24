@@ -15,6 +15,8 @@ object TreeDiagramHttpHandler : AsyncHttpHandler<NettyHttpContent> {
 
     suspend fun getRouterTree() = router.suspendToString()
 
+    suspend fun getRoute(route: String) = router.get(route)
+
     override suspend fun handle(content: NettyHttpContent) {
         if (content.uri == "/") {
             content.write(router.suspendToString())
@@ -31,7 +33,7 @@ object TreeDiagramHttpHandler : AsyncHttpHandler<NettyHttpContent> {
 
             try {
                 mod.handle(content)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 e.printStackTrace()
                 content.responseCode = 500
                 content.responseBody.reset()

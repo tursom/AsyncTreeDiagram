@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonArray
 import io.vertx.ext.sql.ResultSet
 import sun.misc.Unsafe
 import java.lang.reflect.Field
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.sql.SQLException
 import java.util.*
@@ -80,7 +81,11 @@ class AsyncSqlAdapter<T>(
             try {
                 if (advanceSetter != null) {
                     //如果你有能力直接从ResultSet里面取出数据,那就随君便
-                    val value = advanceSetter.invoke(bean, result, index)!!
+                    val value = try {
+                        advanceSetter.invoke(bean, result, index)!!
+                    } catch (e: InvocationTargetException) {
+                        throw e.targetException
+                    }
                     field.set(bean, value)
                 } else {
                     result.getValue(index)?.let { value ->
@@ -105,7 +110,11 @@ class AsyncSqlAdapter<T>(
     ): Any? {
         val dbType = value.javaClass // 这里是获取数据库字段的类型
         return if (setter != null) {
-            setter.invoke(bean, value.toString())
+            try {
+                setter.invoke(bean, value.toString())
+            } catch (e: InvocationTargetException) {
+                throw e.targetException
+            }
         } else if (beanType == java.lang.Float::class.java) {
             if (dbType == java.lang.Double::class.java) {
                 (value as Double).toFloat()

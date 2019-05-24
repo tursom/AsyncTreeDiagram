@@ -7,12 +7,12 @@ import cn.tursom.web.HttpContent
 import java.io.Serializable
 
 @NoBlocking
-@ModPath("echo/:message", "echo", "echo/")
+@ModPath("echo/:message", "echo", "echo/*")
 class Echo : BaseMod("原样返回:message") {
     override suspend fun handle(
         uri: String,
         content: HttpContent
     ): Serializable? {
-        return content["message"]
+        return content["message"] ?: content.getParams("*")?.toTypedArray()
     }
 }
