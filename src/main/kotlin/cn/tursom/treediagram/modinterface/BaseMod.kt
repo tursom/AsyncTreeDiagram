@@ -18,7 +18,7 @@ abstract class BaseMod(val description: String = "") {
      * 在调用的时候会自动创建目录，不必担心目录不存在的问题
      * 如果有模组想储存文件请尽量使用这个目录
      */
-    val modPath = run {
+    val modPath by lazy {
         val path = "mods/${this::class.java.name}/"
         val dir = File(path)
         if (!dir.exists()) dir.mkdirs()

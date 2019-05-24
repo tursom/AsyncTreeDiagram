@@ -188,10 +188,6 @@ class AsyncSqliteHelper(base: String) : AsyncSqlHelper {
     }
 
     companion object {
-        init {
-            Class.forName("org.sqlite.JDBC");
-        }
-
         private val Field.fieldType: String?
             get() = when (type) {
                 java.lang.Byte::class.java -> "INTEGER"
