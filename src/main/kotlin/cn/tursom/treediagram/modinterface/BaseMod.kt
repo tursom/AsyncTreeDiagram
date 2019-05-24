@@ -14,7 +14,7 @@ import java.util.logging.Logger
 @NoBlocking
 abstract class BaseMod(
     val description: String = "",
-    val help: () -> String = { "" }
+    val help: suspend () -> String = { "" }
 ) {
 
     /**

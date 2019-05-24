@@ -34,7 +34,7 @@ class ModInfo : BaseMod("查看模组信息") {
         sb.append("$mod\n")
         val help = mod.help()
         if (help.isNotEmpty()) sb.append(help)
-        sb.append("routers:")
+        sb.append("\nrouters:")
         mod.routeList.forEach {
             val route = baseRoute + it
             val routeMod = getRoute(route).first

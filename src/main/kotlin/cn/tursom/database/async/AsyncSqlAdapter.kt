@@ -151,14 +151,6 @@ class AsyncSqlAdapter<T>(
         val setter: Method?
     )
 
-    interface Adaptable {
-        fun adapt(obj: Any)
-    }
-
-    interface ResultSetReadable {
-        fun adapt(fieldName: String, resultSet: JsonArray, index: Int)
-    }
-
     companion object {
         //利用Unsafe绕过构造函数获取变量
         private val unsafe by lazy {

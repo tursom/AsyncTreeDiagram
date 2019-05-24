@@ -7,7 +7,11 @@ import cn.tursom.web.HttpContent
 import java.io.Serializable
 
 @ModPath("login", "login/:name")
-class Login : BaseMod("登录") {
+class Login : BaseMod("登录", {
+    """用来登录的模组
+参数name用来指定用户名，参数password用来指定密码
+""".trimIndent()
+}) {
     override suspend fun handle(
         uri: String,
         content: HttpContent
