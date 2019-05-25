@@ -2,6 +2,7 @@ package cn.tursom.web.router
 
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
+import java.util.logging.Logger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -27,7 +28,7 @@ class SuspendRouter<T> {
         route: String,
         value: T?,
         onDestroy: ((oldValue: T) -> Unit)? = null
-    ) {
+    ): T? {
         val routeList = route.split('?')[0].split('/').drop(0)
         var routeNode = rootNode
         var r: String
@@ -68,10 +69,11 @@ class SuspendRouter<T> {
         routeNode.routeList = routeList
         routeNode.index = index - 1
         lastChangeTime = System.currentTimeMillis()
+        return value
     }
 
     fun delRoute(route: String, onDestroy: ((oldValue: T) -> Unit)? = null) {
-        this[route, onDestroy] = null
+        set(route, null, onDestroy)
     }
 
     fun set(
@@ -151,6 +153,11 @@ class SuspendRouter<T> {
             strBufTime = System.currentTimeMillis()
         }
         return strBuf
+    }
+
+    companion object {
+        @JvmStatic
+        private val logger = Logger.getLogger("Router")
     }
 }
 
@@ -280,7 +287,8 @@ open class SuspendRouteNode<T>(
             }
         }
 
-        routeList.add("*" to route[startIndex])
+        for (i in startIndex until route.size)
+            routeList.add("*" to route[i])
         return wildSubRouter to 1
     }
 

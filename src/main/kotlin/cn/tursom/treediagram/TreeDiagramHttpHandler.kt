@@ -18,12 +18,6 @@ object TreeDiagramHttpHandler : AsyncHttpHandler<NettyHttpContent> {
     suspend fun getRoute(route: String) = router.get(route)
 
     override suspend fun handle(content: NettyHttpContent) {
-        if (content.uri == "/") {
-            content.write(router.suspendToString())
-            content.finish()
-            return
-        }
-
         val (mod, path) = router.get(content.uri)
         if (mod == null) {
             content.responseCode = 404

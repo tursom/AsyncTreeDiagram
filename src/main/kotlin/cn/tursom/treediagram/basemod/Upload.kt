@@ -1,9 +1,6 @@
 package cn.tursom.treediagram.basemod
 
-import cn.tursom.treediagram.modinterface.BaseMod
-import cn.tursom.treediagram.modinterface.ModException
-import cn.tursom.treediagram.modinterface.ModPath
-import cn.tursom.treediagram.modinterface.NeedBody
+import cn.tursom.treediagram.modinterface.*
 import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
 import java.io.File
@@ -17,6 +14,7 @@ import java.io.Serializable
  * file与file64的去别在于file是文本文件的原文件内容，file64是base64编码后的文件内容
  * 返回的是上传到服务器的目录
  */
+@AbsPath("upload/:type/:filename", "upload/:filename", "upload")
 @ModPath("upload/:type/:filename", "upload/:filename", "upload")
 @NeedBody(10 * 1024 * 1024)
 class Upload : BaseMod("上传文件") {

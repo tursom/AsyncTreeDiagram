@@ -1,6 +1,7 @@
 package cn.tursom.treediagram.basemod
 
 import cn.tursom.treediagram.TreeDiagramHttpHandler.modManager
+import cn.tursom.treediagram.modinterface.AbsPath
 import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModException
 import cn.tursom.treediagram.modinterface.ModPath
@@ -19,6 +20,7 @@ import cn.tursom.web.HttpContent
  * 本模组会根据提供的信息自动寻找模组并加载
  * 模组加载的根目录为使用Upload上传的根目录
  */
+@AbsPath("loadmod/:jarPath/:className/:system", "loadmod/:jarPath/:className", "loadmod/:modData", "loadmod")
 @ModPath("loadmod/:jarPath/:className/:system", "loadmod/:jarPath/:className", "loadmod/:modData", "loadmod")
 class ModLoader : BaseMod("加载模组") {
     override suspend fun handle(
@@ -61,7 +63,7 @@ class ModLoader : BaseMod("加载模组") {
                 modManager
             )
         }
-        if (!modLoader.load()) throw ModException("mod load error")
+        modLoader.load()
         return null
     }
 }

@@ -5,6 +5,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileNotFoundException
+import java.lang.reflect.InvocationTargetException
 import java.net.URL
 import java.net.URLClassLoader
 
@@ -74,26 +75,22 @@ class ModLoader(
      * 手动加载模组
      * @return 是否所有的模组都加载成功
      */
-    suspend fun load(): Boolean {
-        //是否所有的模组都加载成功
-        var allSuccessful = true
+    suspend fun load() {
         className.forEach { className ->
             try {
                 //获取一个指定模组的对象
                 val modClass = myClassLoader!!.loadClass(className)
-                val modObject = modClass.getConstructor().newInstance() as BaseMod
+                val modObject = modClass.newInstance() as BaseMod
                 //加载模组
                 if (user == null)
                     modManager.loadMod(modObject)
                 else {
                     modManager.loadMod(user, modObject)
                 }
-            } catch (e: NoSuchMethodException) {
-                //如果失败，将标志位置否
-                allSuccessful = false
+            } catch (e: InvocationTargetException) {
+                throw e.targetException
             }
         }
-        return allSuccessful
     }
 }
 

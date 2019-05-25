@@ -2,25 +2,30 @@ package cn.tursom.treediagram.modloader
 
 import cn.tursom.treediagram.modinterface.*
 import cn.tursom.web.router.SuspendRouter
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
 import java.net.URLClassLoader
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
-import kotlin.collections.HashSet
 
 class ModManager(private val router: SuspendRouter<BaseMod>) {
     private val logger = Logger.getLogger("ModManager")!!
     private val systemModMap = ConcurrentHashMap<String, BaseMod>()
-    private val userModMapMap: Hashtable<String, ConcurrentHashMap<String, BaseMod>> = Hashtable()
+    private val userModMapMap: ConcurrentHashMap<String, ConcurrentHashMap<String, BaseMod>> = ConcurrentHashMap()
+
+    @Volatile
+    var lastChangeTime: Long = System.currentTimeMillis()
+
+    val sysModMap: Map<String, BaseMod>
+        get() = systemModMap
+    val userModMap: Map<String, Map<String, BaseMod>>
+        get() = userModMapMap
 
     init {
         //加载系统模组
-        GlobalScope.launch {
+        runBlocking {
             arrayOf(
                 cn.tursom.treediagram.basemod.Echo(),
                 cn.tursom.treediagram.basemod.Email(),
@@ -34,7 +39,8 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 cn.tursom.treediagram.basemod.Close(),
                 cn.tursom.treediagram.basemod.LoadedMod(),
                 cn.tursom.treediagram.basemod.RouterTree(),
-                cn.tursom.treediagram.basemod.ModInfo()
+                cn.tursom.treediagram.basemod.ModInfo(),
+                cn.tursom.treediagram.basemod.ModTree()
             ).forEach {
                 loadMod(it)
             }
@@ -62,7 +68,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         return pathSet
     }
 
-    fun findMod(modName: String, user: String?): BaseMod? {
+    fun findMod(modName: String, user: String? = null): BaseMod? {
         val modMap = if (user != null) {
             userModMapMap[user]
         } else {
@@ -77,7 +83,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
      */
     internal suspend fun loadMod(mod: BaseMod) {
         //输出日志信息
-        logger.info("loading mod: ${mod::class.java.name}")
+        logger.info("loading mod: $mod")
 
         //记得销毁被替代的模组
         removeMod(mod)
@@ -89,21 +95,15 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         systemModMap[mod.modName] = mod
         systemModMap[mod.modName.split('.').last()] = mod
 
-
-        val modClass = mod.javaClass
-        val modPath = modClass.getAnnotation(ModPath::class.java)
-
-        val fullPath = "/mod/system/${mod.modName}"
-        addRoute(fullPath, mod)
-        if (modPath != null) {
-            modPath.path.forEach {
-                val path = "/mod/system/$it"
-                if (path != fullPath) addRoute(path, mod)
-            }
-        } else {
-            val path = "/mod/system/${mod.modName.split('.').last()}"
-            if (path != fullPath) addRoute(path, mod)
+        mod.routeList.forEach {
+            addRoute("/mod/system/$it", mod)
         }
+
+        mod.absRouteList.forEach {
+            addRoute("/$it", mod)
+        }
+
+        lastChangeTime = System.currentTimeMillis()
 
     }
 
@@ -131,21 +131,12 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         userModMap[mod.modName] = mod
         userModMap[mod.simpName] = mod
 
-        val modClass = mod.javaClass
-        val modPath = modClass.getAnnotation(ModPath::class.java)
-
-        val fullPath = "/mod/user/$user/${mod.modName}"
-        addRoute(fullPath, mod)
-
-        if (modPath != null) {
-            modPath.path.forEach {
-                val path = "/mod/user/$user/$it"
-                if (path != fullPath) addRoute(path, mod)
-            }
-        } else {
-            val path = "/mod/user/$user/${mod.modName.split('.').last()}"
-            if (path != fullPath) addRoute(path, mod)
+        mod.routeList.forEach {
+            addRoute("/mod/user/$user/$it", mod)
+            addRoute("/user/$user/$it", mod)
         }
+
+        lastChangeTime = System.currentTimeMillis()
 
         return mod.modName
     }
@@ -187,6 +178,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 allSuccessful = false
             }
         }
+        lastChangeTime = System.currentTimeMillis()
         return allSuccessful
     }
 
@@ -214,6 +206,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 router.delRoute(route)
             }
         }
+        lastChangeTime = System.currentTimeMillis()
     }
 
     /**
@@ -239,6 +232,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 router.delRoute(route)
             }
         }
+        lastChangeTime = System.currentTimeMillis()
     }
 
     private fun addRoute(fullRoute: String, mod: BaseMod) {

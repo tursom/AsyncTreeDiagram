@@ -1,5 +1,6 @@
 package cn.tursom.treediagram.basemod
 
+import cn.tursom.treediagram.modinterface.AbsPath
 import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModPath
 import cn.tursom.treediagram.modinterface.NoBlocking
@@ -12,6 +13,7 @@ import java.io.Serializable
  * 获取上传的文件的列表
  */
 @NoBlocking
+@AbsPath("UploadFileList")
 @ModPath("UploadFileList")
 class GetUploadFileList : BaseMod("获取上传的文件的列表") {
     override suspend fun handle(

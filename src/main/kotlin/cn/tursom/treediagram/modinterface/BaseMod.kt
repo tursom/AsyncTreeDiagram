@@ -14,7 +14,7 @@ import java.util.logging.Logger
 @NoBlocking
 abstract class BaseMod(
     val description: String = "",
-    val help: suspend () -> String = { "" }
+    val help: String = ""
 ) {
 
     /**
@@ -44,7 +44,7 @@ abstract class BaseMod(
     abstract suspend fun handle(
         uri: String,
         content: HttpContent
-    ): Serializable?
+    ): Any?
 
     open suspend fun handle(content: HttpContent) {
         val ret = ReturnData(
@@ -108,14 +108,26 @@ val BaseMod.routeList: List<String>
     get() {
         val list = ArrayList<String>()
         val clazz = this.javaClass
+        list.add(clazz.name)
+
         val path = clazz.getAnnotation(ModPath::class.java)
         if (path != null) {
-            path.path.forEach {
+            path.paths.forEach {
                 list.add(it)
             }
         } else {
             list.add(clazz.name.split('.').last())
         }
-        list.add(clazz.name)
+        return list
+    }
+
+val BaseMod.absRouteList: List<String>
+    get() {
+        val list = ArrayList<String>()
+        val clazz = this.javaClass
+        val path = clazz.getAnnotation(AbsPath::class.java) ?: return list
+        path.paths.forEach {
+            list.add(it)
+        }
         return list
     }
