@@ -33,7 +33,7 @@ class Email : BaseMod("单发邮件") {
     override suspend fun handle(
         uri: String,
         content: HttpContent
-    ): Serializable? {
+    ): String {
         content.token
         return try {
             //提取邮件信息

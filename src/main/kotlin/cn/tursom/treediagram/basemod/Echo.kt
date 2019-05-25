@@ -5,7 +5,6 @@ import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModPath
 import cn.tursom.treediagram.modinterface.NoBlocking
 import cn.tursom.web.HttpContent
-import java.io.Serializable
 
 @NoBlocking
 @AbsPath("echo", "echo/*", "echo/:message")

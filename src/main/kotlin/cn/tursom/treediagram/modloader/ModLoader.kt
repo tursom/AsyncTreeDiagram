@@ -75,7 +75,8 @@ class ModLoader(
      * 手动加载模组
      * @return 是否所有的模组都加载成功
      */
-    suspend fun load() {
+    suspend fun load(): List<String> {
+        val loadedMod = ArrayList<String>()
         className.forEach { className ->
             try {
                 //获取一个指定模组的对象
@@ -87,10 +88,12 @@ class ModLoader(
                 else {
                     modManager.loadMod(user, modObject)
                 }
+                loadedMod.add(className)
             } catch (e: InvocationTargetException) {
                 throw e.targetException
             }
         }
+        return loadedMod
     }
 }
 

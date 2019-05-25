@@ -26,7 +26,7 @@ class ModLoader : BaseMod("加载模组") {
     override suspend fun handle(
         uri: String,
         content: HttpContent
-    ): String? {
+    ): Any {
         if (content["modData"] == "help") {
             return "使用方法：\n" +
                     "首先使用Upload模组上传到服务器目录\n" +
@@ -63,7 +63,6 @@ class ModLoader : BaseMod("加载模组") {
                 modManager
             )
         }
-        modLoader.load()
-        return null
+        return modLoader.load()
     }
 }

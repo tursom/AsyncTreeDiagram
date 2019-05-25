@@ -17,7 +17,7 @@ class GroupEmail : BaseMod("群发邮件，为每个人发送内容相同的邮�
     override suspend fun handle(
         uri: String,
         content: HttpContent
-    ): Serializable? {
+    ): String {
         content.token
         try {
             val groupEmailData = GroupEmailData(

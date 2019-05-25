@@ -4,7 +4,6 @@ import cn.tursom.treediagram.modinterface.*
 import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
 import java.io.File
-import java.io.Serializable
 
 /**
  * 文件上传模组
@@ -23,7 +22,7 @@ class Upload : BaseMod("上传文件") {
     override suspend fun handle(
         uri: String,
         content: HttpContent
-    ): Serializable? {
+    ): Any {
         val token = content.token
 
         //确保上传用目录可用
