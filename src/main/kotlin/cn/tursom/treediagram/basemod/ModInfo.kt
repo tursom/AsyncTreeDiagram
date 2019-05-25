@@ -13,10 +13,6 @@ import java.util.concurrent.ConcurrentHashMap
 class ModInfo : BaseMod("查看模组信息") {
     private val modMap = ConcurrentHashMap<Pair<String?, BaseMod>, SoftReference<String>>()
 
-    override fun init() {
-        super.init()
-    }
-
     override suspend fun handle(uri: String, content: HttpContent): String? {
         val user = content["user"] ?: try {
             content.token.usr

@@ -4,7 +4,6 @@ import cn.tursom.treediagram.ReturnData
 import cn.tursom.web.HttpContent
 import com.google.gson.Gson
 import java.io.File
-import java.io.Serializable
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.logging.Level

@@ -68,7 +68,7 @@ class ModTree : BaseMod("返回模组树") {
 
                 val sb = StringBuilder()
                 sb.append(getSystemTree())
-                sb.append("user\n")
+                if (modManager.userModMap.isNotEmpty()) sb.append("user\n")
                 modManager.userModMap.forEach { (t, u) ->
                     sb.append("|- $t\n")
                     val infoMap = HashMap<BaseMod, String>()

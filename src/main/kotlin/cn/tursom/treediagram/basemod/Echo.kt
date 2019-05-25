@@ -8,8 +8,8 @@ import cn.tursom.web.HttpContent
 import java.io.Serializable
 
 @NoBlocking
-@AbsPath("echo/:message", "echo", "echo/*")
-@ModPath("echo/:message", "echo", "echo/*")
+@AbsPath("echo", "echo/*", "echo/:message")
+@ModPath("echo", "echo/*", "echo/:message")
 class Echo : BaseMod("原样返回:message") {
     override suspend fun handle(
         uri: String,
