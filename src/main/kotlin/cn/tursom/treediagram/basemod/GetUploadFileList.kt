@@ -7,14 +7,13 @@ import cn.tursom.treediagram.modinterface.NoBlocking
 import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
 import java.io.File
-import java.io.Serializable
 
 /**
  * 获取上传的文件的列表
  */
 @NoBlocking
-@AbsPath("UploadFileList")
-@ModPath("UploadFileList")
+@AbsPath("UploadFileList", "fileList")
+@ModPath("UploadFileList", "fileList")
 class GetUploadFileList : BaseMod("获取上传的文件的列表") {
     override suspend fun handle(
         uri: String,

@@ -1,12 +1,8 @@
 package cn.tursom.treediagram.basemod
 
-import cn.tursom.treediagram.modinterface.AbsPath
-import cn.tursom.treediagram.modinterface.BaseMod
-import cn.tursom.treediagram.modinterface.ModPath
-import cn.tursom.treediagram.modinterface.NoBlocking
+import cn.tursom.treediagram.modinterface.*
 import cn.tursom.web.HttpContent
 
-@NoBlocking
 @AbsPath("echo", "echo/*", "echo/:message")
 @ModPath("echo", "echo/*", "echo/:message")
 class Echo : BaseMod("原样返回:message") {
@@ -17,8 +13,8 @@ class Echo : BaseMod("原样返回:message") {
         return content["message"] ?: {
             val sb = StringBuilder()
             content.getParams("*")?.forEach {
-                sb.append("$it/")
-            }
+                sb.append("${it.urlDecode}/")
+            } ?: throw ModException("no message get")
             sb.deleteCharAt(sb.length - 1).toString()
         }()
     }

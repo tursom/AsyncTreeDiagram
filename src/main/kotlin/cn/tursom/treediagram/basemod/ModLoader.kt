@@ -1,5 +1,6 @@
 package cn.tursom.treediagram.basemod
 
+import cn.tursom.tools.fromJson
 import cn.tursom.treediagram.TreeDiagramHttpHandler.modManager
 import cn.tursom.treediagram.modinterface.AbsPath
 import cn.tursom.treediagram.modinterface.BaseMod
@@ -20,23 +21,25 @@ import cn.tursom.web.HttpContent
  * 本模组会根据提供的信息自动寻找模组并加载
  * 模组加载的根目录为使用Upload上传的根目录
  */
-@AbsPath("loadmod/:jarPath/:className/:system", "loadmod/:jarPath/:className", "loadmod/:modData", "loadmod")
-@ModPath("loadmod/:jarPath/:className/:system", "loadmod/:jarPath/:className", "loadmod/:modData", "loadmod")
-class ModLoader : BaseMod("加载模组") {
+@AbsPath("loadmod", "loadmod/:jarPath", "loadmod/:jarPath/:className", "loadmod/:jarPath/:className/:system")
+@ModPath("loadmod", "loadmod/:jarPath", "loadmod/:jarPath/:className", "loadmod/:jarPath/:className/:system")
+class ModLoader : BaseMod(
+    "加载模组", "使用方法：\n" +
+            "首先使用Upload模组上传到服务器目录\n" +
+            "提供上传文件的相对目录（即上传文件时提供的文件名）与需要加载的class即可"
+) {
     override suspend fun handle(
         uri: String,
         content: HttpContent
     ): Any {
-        if (content["modData"] == "help") {
-            return "使用方法：\n" +
-                    "首先使用Upload模组上传到服务器目录\n" +
-                    "提供上传文件的相对目录（即上传文件时提供的文件名）与需要加载的class即可"
+        if (content["jarPath"] == "help") {
+            return help
         }
         val token = content.token
         val modData = content["modData"]
         val modLoader = if (modData != null) {
-            cn.tursom.treediagram.modloader.ModLoader(
-                modData,
+            cn.tursom.treediagram.modloader.ModLoader.getClassLoader(
+                gson.fromJson(modData),
                 if (content["system"] != "true") {
                     token.usr
                 } else {
@@ -47,11 +50,14 @@ class ModLoader : BaseMod("加载模组") {
                 modManager
             )
         } else {
-            cn.tursom.treediagram.modloader.ModLoader(
+            val className = content["className"]
+            val jarPath = content["jarPath"]
+            jarPath ?: throw ModException("no mod get")
+            cn.tursom.treediagram.modloader.ModLoader.getClassLoader(
                 ClassData(
-                    null,
-                    content["jarPath"] ?: throw ModException("no mod get"),
-                    arrayOf(content["className"] ?: throw ModException("no mod get"))
+                    jarPath,
+                    jarPath,
+                    if (className != null) listOf(className) else null
                 ),
                 if (content["system"] != "true") {
                     token.usr

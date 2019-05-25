@@ -30,11 +30,11 @@ dependencies {
     // kotlin 反射
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:3.14.1")
+
     // gson
     implementation "com.google.code.gson:gson:2.8.2"
-
-    // vert.x-web
-    implementation "io.vertx:vertx-web:3.7.0"
 
     // database.sqlite 依赖的库
     implementation 'org.xerial:sqlite-jdbc:3.21.0.1'

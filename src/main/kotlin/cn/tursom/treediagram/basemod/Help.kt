@@ -8,9 +8,9 @@ import cn.tursom.web.HttpContent
 import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentHashMap
 
-@AbsPath("modInfo", "modInfo/:modName", "modInfo/:user/:modName", "help", "help/:modName", "help/:user/:modName")
-@ModPath("modInfo", "modInfo/:modName", "modInfo/:user/:modName", "help", "help/:modName", "help/:user/:modName")
-class ModInfo : BaseMod("查看模组信息") {
+@AbsPath("modInfo", "modInfo/:modId", "modInfo/:user/:modId", "help", "help/:modId", "help/:user/:modId")
+@ModPath("modInfo", "modInfo/:modId", "modInfo/:user/:modId", "help", "help/:modId", "help/:user/:modId")
+class Help : BaseMod("查看模组信息") {
     private val modMap = ConcurrentHashMap<Pair<String?, BaseMod>, SoftReference<String>>()
 
     override suspend fun handle(uri: String, content: HttpContent): String? {
@@ -19,7 +19,7 @@ class ModInfo : BaseMod("查看模组信息") {
         } catch (e: Exception) {
             null
         }
-        val modName = content["modName"] ?: "ModInfo"
+        val modName = content["modId"] ?: "Help"
         val mod = modManager.findMod(modName, user) ?: return null
         val buff = modMap[user to mod]
         val buffStr = buff?.get()

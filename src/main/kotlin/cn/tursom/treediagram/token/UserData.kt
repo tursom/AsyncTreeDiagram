@@ -10,9 +10,10 @@ import cn.tursom.treediagram.TreeDiagramHttpHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
 
+@Suppress("unused")
 @TableName("users")
 data class UserData(
-    @NotNull val username: String,
+    @PrimaryKey @NotNull val username: String,
     @NotNull val password: String,
     @NotNull @Setter("setLevel") @FieldType("TEXT") @Getter("getLevel") val level: List<String>
 ) {
@@ -23,11 +24,6 @@ data class UserData(
     fun getLevel(): String {
         return Gson().toJson(level).sqlStr
     }
-}
-
-internal val userTable = runBlocking {
-    TreeDiagramHttpHandler.database.createTable(UserData::class.java)
-    "users"
 }
 
 internal suspend fun findUser(username: String): UserData? {

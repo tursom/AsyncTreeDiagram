@@ -39,9 +39,10 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 cn.tursom.treediagram.basemod.Close(),
                 cn.tursom.treediagram.basemod.LoadedMod(),
                 cn.tursom.treediagram.basemod.RouterTree(),
-                cn.tursom.treediagram.basemod.ModInfo(),
+                cn.tursom.treediagram.basemod.Help(),
                 cn.tursom.treediagram.basemod.ModTree(),
-                cn.tursom.treediagram.basemod.ModRemover()
+                cn.tursom.treediagram.basemod.ModRemover(),
+                cn.tursom.treediagram.basemod.Download()
             ).forEach {
                 loadMod(it)
             }
@@ -144,11 +145,11 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
 
     suspend fun loadMod(configData: ClassData, user: String? = null, rootPath: String? = null): Boolean {
         // 要加载的类名
-        val className: Array<String> = configData.classname!!
+        val className: List<String> = configData.classname!!
         // 类加载器
         val myClassLoader: ClassLoader? = try {
             val file = if (rootPath == null) {
-                File(configData.path!!)
+                File(configData.path)
             } else {
                 File(rootPath + configData.path!!)
             }
