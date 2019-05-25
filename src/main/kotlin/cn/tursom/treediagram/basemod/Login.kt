@@ -21,7 +21,7 @@ class Login : BaseMod("登录",     """用来登录的模组
     }
 
     override suspend fun handle(content: HttpContent) {
-        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
+        content.setResponseHeader("content-type", "application/json; charset=UTF-8")
         val username = content["name"]
         val password = content["password"]
         content.write(login(username, password))
