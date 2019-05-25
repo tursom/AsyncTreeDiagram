@@ -26,8 +26,12 @@ class ModTree : BaseMod("返回模组树") {
         }
         val sb = StringBuilder()
         sb.append("system\n")
+        val infoMap = HashMap<BaseMod, String>()
         modManager.sysModMap.forEach { (t, u) ->
-            sb.append("|- id=$t\n|  $u\n")
+            infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
+        }
+        infoMap.forEach { (t, u) ->
+            sb.append("|- $t$u\n")
         }
         systemCache = sb.toString()
         systemCacheTime = System.currentTimeMillis()
@@ -43,9 +47,13 @@ class ModTree : BaseMod("返回模组树") {
                 return cache
             }
         }
-        sb.append("user\n")
+        sb.append("$user\n")
+        val infoMap = HashMap<BaseMod, String>()
         modManager.userModMap[user]?.forEach { (t, u) ->
-            sb.append("|- $t: $u\n")
+            infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
+        }
+        infoMap.forEach { (t, u) ->
+            sb.append("|- $t$u\n")
         }
         val str = sb.toString()
         userCache[user] = System.currentTimeMillis() to str
@@ -63,8 +71,12 @@ class ModTree : BaseMod("返回模组树") {
                 sb.append("user\n")
                 modManager.userModMap.forEach { (t, u) ->
                     sb.append("|- $t\n")
+                    val infoMap = HashMap<BaseMod, String>()
                     u.forEach { (t, u) ->
-                        sb.append("|  |- id=$t\n|  |  $u\n")
+                        infoMap[u] = (infoMap[u] ?: "") + "\n|  |  id=$t"
+                    }
+                    infoMap.forEach { (t, u) ->
+                        sb.append("|  |- $t$u\n")
                     }
                 }
                 cache = sb.toString()

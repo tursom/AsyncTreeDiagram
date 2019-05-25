@@ -23,7 +23,8 @@ class ModInfo : BaseMod("查看模组信息") {
         } catch (e: Exception) {
             null
         }
-        val mod = modManager.findMod(content["modName"] ?: "ModInfo", user) ?: return null
+        val modName = content["modName"] ?: "ModInfo"
+        val mod = modManager.findMod(modName, user) ?: return null
         val buff = modMap[user to mod]
         val buffStr = buff?.get()
         if (buffStr != null) {
@@ -34,6 +35,11 @@ class ModInfo : BaseMod("查看模组信息") {
         sb.append("$mod\n")
         val help = mod.help
         if (help.isNotEmpty()) sb.append(help)
+        sb.append("\nid:")
+        sb.append("\n|- ${mod.modName}")
+        if (modManager.findMod(mod.simpName) === mod) {
+            sb.append("\n|- ${mod.simpName}")
+        }
         sb.append("\nrouters:")
         if (user == null) {
             mod.absRouteList.forEach {
