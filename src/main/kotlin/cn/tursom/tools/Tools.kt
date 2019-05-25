@@ -7,6 +7,7 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
 
+
 /**
  * Created by Tursom Ulefits on 2017/8/8.
  * Author: Tursom K. Ulefits

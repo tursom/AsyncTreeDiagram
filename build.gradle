@@ -16,7 +16,7 @@ plugins {
 }
 
 group 'cn.tursom'
-version '0.1'
+version '0.2'
 
 sourceCompatibility = 1.8
 
