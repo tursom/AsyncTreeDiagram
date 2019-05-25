@@ -20,6 +20,7 @@ class Register : BaseMod("注册用户") {
     }
 
     override suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         content.write(register(content))
         content.finish()
     }

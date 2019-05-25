@@ -19,10 +19,7 @@ import java.io.File
 class Upload : BaseMod("上传文件") {
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun handle(
-        uri: String,
-        content: HttpContent
-    ): Any {
+    override suspend fun handle(uri: String, content: HttpContent): Any {
         val token = content.token
 
         //确保上传用目录可用
@@ -60,7 +57,7 @@ class Upload : BaseMod("上传文件") {
         stream.flush()
         stream.close()
 
-        content.addResponseHeader("filename", filename)
+        content.setResponseHeader("filename", filename)
         //返回上传的文件名
         return filename
     }

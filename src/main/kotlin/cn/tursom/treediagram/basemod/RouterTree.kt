@@ -11,6 +11,7 @@ import cn.tursom.web.HttpContent
 class RouterTree : BaseMod("返回路由树") {
     override suspend fun handle(uri: String, content: HttpContent) = getRouterTree()
     override suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         content.write(getRouterTree())
         content.finish()
     }

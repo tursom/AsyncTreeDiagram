@@ -55,6 +55,7 @@ class Help : BaseMod("查看模组信息") {
     }
 
     override suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         content.write(handle(content.uri, content) ?: "未找到模组")
         content.finish()
     }

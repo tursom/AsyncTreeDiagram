@@ -89,6 +89,7 @@ class ModTree : BaseMod("返回模组树") {
     }
 
     override suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         content.write(handle(content.uri, content))
         content.finish()
     }

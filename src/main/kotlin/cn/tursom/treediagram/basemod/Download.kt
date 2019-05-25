@@ -25,6 +25,7 @@ class Download : BaseMod("下载文件") {
             content.responseCode = 404
             content.finish()
         } else {
+//            content.setResponseHeader("content-type", "charset=UTF-8")
             content.write(fileData)
             content.finish()
         }

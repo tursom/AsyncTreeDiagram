@@ -46,6 +46,7 @@ abstract class BaseMod(
     ): Any?
 
     open suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         val ret = ReturnData(
             true,
             try {

@@ -20,6 +20,7 @@ class Echo : BaseMod("原样返回:message") {
     }
 
     override suspend fun handle(content: HttpContent) {
+        content.setResponseHeader("content-type", "text/plain; charset=UTF-8")
         content.write(handle(content.uri, content))
         content.finish()
     }

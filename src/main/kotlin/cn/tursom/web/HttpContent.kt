@@ -15,7 +15,7 @@ interface HttpContent {
     fun getParams(): Map<String, List<String>>
     fun getParams(param: String): List<String>?
 
-    fun addResponseHeader(name: String, value: Any)
+    fun setResponseHeader(name: String, value: Any)
 
     fun write(message: String)
     fun write(byte: Int)

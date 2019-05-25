@@ -28,10 +28,7 @@ class ModLoader : BaseMod(
             "首先使用Upload模组上传到服务器目录\n" +
             "提供上传文件的相对目录（即上传文件时提供的文件名）与需要加载的class即可"
 ) {
-    override suspend fun handle(
-        uri: String,
-        content: HttpContent
-    ): Any {
+    override suspend fun handle(uri: String, content: HttpContent): Any {
         if (content["jarPath"] == "help") {
             return help
         }
