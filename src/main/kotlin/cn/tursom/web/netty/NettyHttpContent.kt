@@ -114,10 +114,6 @@ open class NettyHttpContent(
 
         ctx.writeAndFlush(response)
     }
-
-    companion object {
-        private val contentType = HttpHeaderValues.TEXT_PLAIN
-    }
 }
 
 /**
