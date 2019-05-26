@@ -32,7 +32,7 @@ abstract class BaseMod(
     /**
      * 当模组被初始化时被调用
      */
-    open fun init() {
+    open suspend fun init() {
         logger.log(Level.INFO, "mod $modName init")
     }
 

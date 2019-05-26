@@ -8,7 +8,9 @@ import java.io.File
 import java.io.StringReader
 import java.lang.reflect.Array
 import java.lang.reflect.Field
+import java.lang.reflect.ParameterizedType
 import java.net.URL
+import java.util.ArrayList
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object Xml {
@@ -130,20 +132,45 @@ object Xml {
     }
 
     private fun Field.parse(target: ElementTarget, element: Element, fieldName: String): Any? {
-        return if (type.isArray) {
-            val list = if (getAnnotation(Vararg::class.java) != null) {
-                element.elements(fieldName)
-            } else {
-                element.element(fieldName).elements()
+        return when {
+            type.isArray -> {
+                val list = if (getAnnotation(Vararg::class.java) != null) {
+                    element.elements(fieldName)
+                } else {
+                    element.element(fieldName).elements()
+                }
+                if (list.isEmpty()) return null
+                val array = Array.newInstance(type.componentType, list.size)
+                list.forEachIndexed { index, any ->
+                    any as Element
+                    Array.set(
+                        array,
+                        index,
+                        type.componentType.parse(any.text ?:  return@forEachIndexed, any) ?: return@forEachIndexed
+                    )
+                }
+                array
             }
-            val array = Array.newInstance(type.componentType, list.size)
-            list.forEachIndexed { index, any ->
-                any as Element
-                Array.set(array, index, type.componentType.parse(any.text ?: return null, any))
+            List::class.java.isAssignableFrom(type) -> {
+                val list = if (getAnnotation(Vararg::class.java) != null) {
+                    element.elements(fieldName)
+                } else {
+                    element.element(fieldName).elements()
+                }
+                val arrayList = ArrayList<Any>()
+                list.forEach { any ->
+                    any as Element
+                    val genericType = this.genericType
+                    val clazz = if (genericType is ParameterizedType) {
+                        genericType.actualTypeArguments[0] as Class<*>
+                    } else {
+                        return@forEach
+                    }
+                    arrayList.add(clazz.parse(any.text ?: return@forEach, any) ?: return@forEach)
+                }
+                arrayList
             }
-            array
-        } else {
-            type.parse(getData(element, fieldName, target), element, fieldName)
+            else -> type.parse(getData(element, fieldName, target), element, fieldName)
         }
     }
 

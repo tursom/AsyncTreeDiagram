@@ -23,21 +23,10 @@ import java.util.jar.JarFile
  */
 class ModLoader private constructor(
     private val user: String? = null,
-    loadInstantly: Boolean = true,
     private val modManager: ModManager,
     private val className: List<String>,
     private val classLoader: ClassLoader
 ) {
-
-    init {
-        //如果需要立即加载模组
-        //则会在对象构造时自动加载模组
-        if (loadInstantly) {
-            //自动加载模组
-            GlobalScope.launch { load() }
-        }
-    }
-
     /**
      * 手动加载模组
      * @return 是否所有的模组都加载成功
@@ -87,7 +76,7 @@ class ModLoader private constructor(
         suspend fun getClassLoader(
             configData: ClassData,
             user: String? = null,
-            rootPath: String?,
+            rootPath: String? = null,
             loadInstantly: Boolean = false,
             modManager: ModManager
         ): ModLoader {
@@ -111,8 +100,11 @@ class ModLoader private constructor(
                 Thread.currentThread().contextClassLoader
             )
             val classList = configData.classname ?: getClassName(jarFile)
-
-            return ModLoader(user, loadInstantly, modManager, classList, classLoader)
+            val loader = ModLoader(user, modManager, classList, classLoader)
+            if (loadInstantly) {
+                loader.load()
+            }
+            return loader
         }
     }
 }
