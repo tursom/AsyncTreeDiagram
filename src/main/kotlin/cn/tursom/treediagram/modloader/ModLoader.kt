@@ -43,6 +43,7 @@ class ModLoader private constructor(
         try {
             //获取一个指定模组的对象
             val modClass = classLoader.loadClass(className)
+            if (!BaseMod::class.java.isAssignableFrom(modClass)) return
             val modObject = try {
                 modClass.newInstance() as BaseMod
             } catch (e: Exception) {
