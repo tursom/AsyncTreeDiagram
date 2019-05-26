@@ -146,7 +146,7 @@ object Xml {
                     Array.set(
                         array,
                         index,
-                        type.componentType.parse(any.text ?:  return@forEachIndexed, any) ?: return@forEachIndexed
+                        type.componentType.parse(any.text ?: return@forEachIndexed, any) ?: return@forEachIndexed
                     )
                 }
                 array
@@ -200,7 +200,7 @@ object Xml {
                 }
                 if (advanceSetMethod != null) {
                     advanceSetMethod.isAccessible = true
-                    advanceSetMethod.invoke(instance, root.element(fieldName))
+                    advanceSetMethod.invoke(instance, root)
                 } else {
                     val setMethod = clazz.getDeclaredMethod(setter.callback, String::class.java)
                     setMethod.isAccessible = true
@@ -525,46 +525,29 @@ object Xml {
         advanceIndentation: String,
         field: Field? = null
     ) {
-        try {
-            obj as Pair<*, *>
-            builder.append("$indentation<${obj.first}>${obj.second}</${obj.first}>")
-            return
-        } catch (e: ClassCastException) {
-        }
-
         val clazz = obj.javaClass
-
-        if (clazz.getAnnotation(CompressionXml::class.java) != null) {
-            toXmlCom(obj, elementName, builder, field)
-            return
+        when {
+            obj is Pair<*, *> -> {
+                builder.append("$indentation<${obj.first}>${obj.second}</${obj.first}>")
+            }
+            clazz.getAnnotation(CompressionXml::class.java) != null -> {
+                toXmlCom(obj, elementName, builder, field)
+            }
+            clazz.isArray -> {
+                arrayXml(
+                    obj as kotlin.Array<*>,
+                    elementName,
+                    builder,
+                    indentation,
+                    advanceIndentation,
+                    "a",
+                    field?.getAnnotation(Vararg::class.java) != null
+                )
+            }
+            obj is Map<*, *> -> mapXml(obj, elementName, builder, indentation, advanceIndentation)
+            obj is Iterable<*> -> iterableXml(obj, elementName, builder, indentation, advanceIndentation)
+            else -> normalXml(obj, elementName, builder, indentation, advanceIndentation)
         }
-
-        if (clazz.isArray) {
-            arrayXml(
-                obj as kotlin.Array<*>,
-                elementName,
-                builder,
-                indentation,
-                advanceIndentation,
-                "a",
-                field?.getAnnotation(Vararg::class.java) != null
-            )
-            return
-        }
-
-        try {
-            mapXml(obj as Map<*, *>, elementName, builder, indentation, advanceIndentation)
-            return
-        } catch (e: ClassCastException) {
-        }
-
-        try {
-            iterableXml(obj as Iterable<*>, elementName, builder, indentation, advanceIndentation)
-            return
-        } catch (e: ClassCastException) {
-        }
-
-        normalXml(obj, elementName, builder, indentation, advanceIndentation)
     }
 
     fun arrayXmlComOnce(value: Any, fieldName: String?, builder: StringBuilder) {

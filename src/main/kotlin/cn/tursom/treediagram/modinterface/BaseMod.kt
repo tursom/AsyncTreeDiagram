@@ -7,8 +7,12 @@ import com.google.gson.Gson
 import java.io.File
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 @NoBlocking
@@ -107,6 +111,18 @@ abstract class BaseMod(
 
         @JvmStatic
         fun getUploadPath(user: String) = "$uploadRootPath$user/"
+
+        @JvmStatic
+        val fileThreadPool: ExecutorService = Executors.newSingleThreadExecutor()
+
+        @JvmStatic
+        suspend fun readFile(file: File): ByteArray {
+            return suspendCoroutine { cont ->
+                fileThreadPool.execute {
+                    cont.resume(file.readBytes())
+                }
+            }
+        }
     }
 }
 

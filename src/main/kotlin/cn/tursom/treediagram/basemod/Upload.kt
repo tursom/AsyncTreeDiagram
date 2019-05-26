@@ -18,7 +18,6 @@ import java.io.File
 @NeedBody(10 * 1024 * 1024)
 class Upload : BaseMod("上传文件") {
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun handle(uri: String, content: HttpContent): Any {
         val token = content.token
 
@@ -53,9 +52,12 @@ class Upload : BaseMod("上传文件") {
         }
 
         // 写入文件
-        stream.write(content.body, content.bodyOffSet, content.readableBytes)
-        stream.flush()
-        stream.close()
+        fileThreadPool.execute {
+            stream.use {
+                it.write(content.body, content.bodyOffSet, content.readableBytes)
+                it.flush()
+            }
+        }
 
         content.setResponseHeader("filename", filename)
         //返回上传的文件名

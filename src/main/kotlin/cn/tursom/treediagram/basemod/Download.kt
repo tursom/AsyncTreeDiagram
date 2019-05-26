@@ -16,7 +16,7 @@ class Download : BaseMod("下载文件") {
         val uploadPath = getUploadPath(token.usr!!)
         val file = File("$uploadPath${content["fileName"] ?: return null}")
         if (!file.exists()) return null
-        return file.readBytes()
+        return readFile(file)
     }
 
     override suspend fun handle(content: HttpContent) {
