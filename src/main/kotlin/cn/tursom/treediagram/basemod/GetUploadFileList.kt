@@ -20,7 +20,7 @@ class GetUploadFileList : BaseMod("获取上传的文件的列表") {
         content: HttpContent
     ): List<String> {
         val token = content.token
-        val uploadPath = "${Upload.uploadRootPath}${token.usr}/"
+        val uploadPath = "${uploadRootPath}${token.usr}/"
         val uploadDir = File(uploadPath)
         val fileList = ArrayList<String>()
         uploadDir.listFiles()?.forEach {

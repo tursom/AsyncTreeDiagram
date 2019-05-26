@@ -1,6 +1,7 @@
 package cn.tursom.treediagram.basemod
 
 import cn.tursom.treediagram.ReturnData
+import cn.tursom.treediagram.TreeDiagramHttpHandler.fileHandler
 import cn.tursom.treediagram.modinterface.AbsPath
 import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModException
@@ -20,6 +21,7 @@ class Close : BaseMod("关闭服务器，需要 admin 等级的权限") {
         logger.log(Level.WARNING, "server closed: $message")
         content.write(gson.toJson(ReturnData(true, message)))
         content.finish()
+        fileHandler.close()
         exitProcess(0)
     }
 }

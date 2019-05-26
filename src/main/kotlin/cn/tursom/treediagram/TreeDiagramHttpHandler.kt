@@ -7,10 +7,31 @@ import cn.tursom.web.AsyncHttpHandler
 import cn.tursom.web.ExceptionContent
 import cn.tursom.web.netty.NettyHttpContent
 import cn.tursom.web.router.SuspendRouter
+import cn.tursom.xml.ElementName
+import cn.tursom.xml.Setter
+import cn.tursom.xml.Xml
+import java.io.File
+import java.util.logging.FileHandler
 
 object TreeDiagramHttpHandler : AsyncHttpHandler<NettyHttpContent> {
     private val router = SuspendRouter<BaseMod>()
     val database = AsyncSqliteHelper("TreeDiagram.db")
+    val config = run {
+        val configFile = File("config.xml")
+        if (!configFile.exists()) {
+            configFile.createNewFile()
+            configFile.outputStream().use {
+                it.write(Xml.toXml(Config()).toByteArray())
+            }
+        }
+        Xml.parse<Config>(configFile)
+    }
+    val fileHandler = run {
+        if (!File(config.logPath).exists()) {
+            File(config.logPath).mkdirs()
+        }
+        FileHandler("${config.logPath}/${config.logFile}%u.%g.xml", config.maxLogSize, config.logFileCount)
+    }
     val modManager = ModManager(router)
 
     suspend fun getRouterTree() = router.suspendToString()
@@ -39,5 +60,21 @@ object TreeDiagramHttpHandler : AsyncHttpHandler<NettyHttpContent> {
 
     override suspend fun exception(content: ExceptionContent) {
         content.cause.printStackTrace()
+    }
+
+    @Suppress("unused")
+    @ElementName("config")
+    data class Config(
+        @Setter("setPort") val port: Int = 12345,
+        @Setter("setLogPath") val logPath: String = "log",
+        @Setter("setLogFile") val logFile: String = "modLog",
+        @Setter("setMaxLogSize") val maxLogSize: Int = 64 * 1024,
+        @Setter("setLogFileCount") val logFileCount: Int = 24
+    ) {
+        fun setPort(port: String) = port.toIntOrNull() ?: 12345
+        fun setLogPath(logPath: String?) = logPath ?: "log"
+        fun setLogFile(modLogFile: String?) = modLogFile ?: "modLog"
+        fun setMaxLogSize(maxLogSize: String?) = maxLogSize?.toIntOrNull() ?: 64 * 1024
+        fun setLogFileCount(logFileCount: String?) = logFileCount?.toIntOrNull() ?: 24
     }
 }

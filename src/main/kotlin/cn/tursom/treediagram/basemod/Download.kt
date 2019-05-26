@@ -13,7 +13,7 @@ import java.io.File
 class Download : BaseMod("下载文件") {
     override suspend fun handle(uri: String, content: HttpContent): ByteArray? {
         val token = content.token
-        val uploadPath = Upload.getUploadPath(token.usr!!)
+        val uploadPath = getUploadPath(token.usr!!)
         val file = File("$uploadPath${content["fileName"] ?: return null}")
         if (!file.exists()) return null
         return file.readBytes()

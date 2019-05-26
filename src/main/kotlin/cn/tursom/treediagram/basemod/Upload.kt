@@ -61,12 +61,4 @@ class Upload : BaseMod("上传文件") {
         //返回上传的文件名
         return filename
     }
-
-    companion object {
-        @JvmStatic
-        val uploadRootPath = "upload/"
-
-        @JvmStatic
-        fun getUploadPath(user: String) = "$uploadRootPath$user/"
-    }
 }

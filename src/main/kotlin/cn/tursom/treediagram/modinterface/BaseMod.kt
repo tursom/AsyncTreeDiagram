@@ -1,6 +1,7 @@
 package cn.tursom.treediagram.modinterface
 
 import cn.tursom.treediagram.ReturnData
+import cn.tursom.treediagram.TreeDiagramHttpHandler.fileHandler
 import cn.tursom.web.HttpContent
 import com.google.gson.Gson
 import java.io.File
@@ -91,10 +92,21 @@ abstract class BaseMod(
     }
 
     companion object {
+        @Suppress("SpellCheckingInspection")
         @JvmStatic
         val gson = Gson()
         @JvmStatic
-        val logger = Logger.getLogger("ModLogger")!!
+        val logger = run {
+            val logger = Logger.getLogger("ModLogger")!!
+            logger.addHandler(fileHandler)
+            logger
+        }
+
+        @JvmStatic
+        val uploadRootPath = "upload/"
+
+        @JvmStatic
+        fun getUploadPath(user: String) = "$uploadRootPath$user/"
     }
 }
 

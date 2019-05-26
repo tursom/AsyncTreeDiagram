@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
+import java.util.jar.JarFile
 
 
 /**
@@ -19,6 +20,17 @@ import java.util.*
  * 如果有超线程技术，则是超线程后的CPU数量
  */
 val cpuNumber = Runtime.getRuntime().availableProcessors()
+
+fun getClassName(jarPath: String): List<String> {
+    val myClassName = ArrayList<String>()
+    for (entry in JarFile(jarPath).entries()) {
+        val entryName = entry.name
+        if (entryName.endsWith(".class")) {
+            myClassName.add(entryName.replace("/", ".").substring(0, entryName.lastIndexOf(".")))
+        }
+    }
+    return myClassName
+}
 
 fun String.simplifyPath(): String {
     if (isEmpty()) {

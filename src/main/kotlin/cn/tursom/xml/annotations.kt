@@ -1,7 +1,7 @@
 package cn.tursom.xml
 
 enum class ElementTarget {
-	Attribute, ElementText, SubElement
+    Attribute, ElementText, SubElement
 }
 
 @Target(AnnotationTarget.CLASS)
@@ -30,9 +30,9 @@ annotation class SubElement
 
 /**
  * 指定转换函数的名称
- * fun callback(text: String): FieldType
+ * fun callback(text: String?): FieldType?
  * or ( advance callback )
- * fun callback(element: Element): FieldType
+ * fun callback(element: Element?): FieldType?
  */
 @Target(AnnotationTarget.FIELD)
 annotation class Setter(val callback: String)

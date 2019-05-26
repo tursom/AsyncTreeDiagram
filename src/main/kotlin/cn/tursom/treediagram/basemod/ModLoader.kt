@@ -42,7 +42,7 @@ class ModLoader : BaseMod(
                 } else {
                     null
                 },
-                Upload.getUploadPath(token.usr!!),
+                getUploadPath(token.usr!!),
                 false,
                 modManager
             )
@@ -61,7 +61,7 @@ class ModLoader : BaseMod(
                 } else {
                     null
                 },
-                Upload.getUploadPath(token.usr!!),
+                getUploadPath(token.usr!!),
                 false,
                 modManager
             )
