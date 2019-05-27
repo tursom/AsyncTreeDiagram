@@ -1,12 +1,12 @@
 package cn.tursom
 
-import cn.tursom.tools.sendGet
+import cn.tursom.socket.utils.sendGet
 import cn.tursom.treediagram.TreeDiagramHttpHandler
-import cn.tursom.web.netty.AsyncNettyHttpServer
+import cn.tursom.web.netty.NettyHttpServer
 
 fun main() {
     val port = 12345
-    val server = AsyncNettyHttpServer(port, TreeDiagramHttpHandler)
+    val server = NettyHttpServer(port, TreeDiagramHttpHandler)
     server.run()
     println("server started")
     println(sendGet("http://127.0.0.1:12345"))

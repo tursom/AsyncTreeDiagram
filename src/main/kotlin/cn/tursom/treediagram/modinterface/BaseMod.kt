@@ -20,6 +20,7 @@ abstract class BaseMod(
     val description: String = "",
     val help: String = ""
 ) {
+    val user: String? = null
 
     /**
      * 模组私有目录
@@ -58,12 +59,6 @@ abstract class BaseMod(
                 handle(content.uri, content)
             } catch (e: ModException) {
                 e.message
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                if (e.message != null)
-                    "${e.javaClass}: ${e.message}"
-                else
-                    e.javaClass.toString()
             }
         )
         content.write(gson.toJson(ret)!!)
@@ -73,7 +68,7 @@ abstract class BaseMod(
     /**
      * 当模组生命周期结束时被调用
      */
-    open fun destroy() {
+    open suspend fun destroy() {
         logger.log(Level.INFO, "mod $modName destroy")
     }
 

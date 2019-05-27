@@ -1,11 +1,8 @@
 package cn.tursom.treediagram.modloader
 
-import cn.tursom.tools.AsyncHttpRequest
+import cn.tursom.socket.utils.AsyncHttpRequest
 import cn.tursom.treediagram.modinterface.BaseMod
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.File
-import java.lang.Exception
 import java.lang.reflect.InvocationTargetException
 import java.net.URLClassLoader
 import java.util.*
@@ -18,8 +15,6 @@ import java.util.jar.JarFile
  * 亦可将配置写入一个文件中
  * 会优先尝试从本地加载模组
  * 本地文件不存在则会从网络加载模组
- *
- * @param loadInstantly 是否立即加载，默认为真
  */
 class ModLoader private constructor(
     private val user: String? = null,

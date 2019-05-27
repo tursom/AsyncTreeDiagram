@@ -7,7 +7,7 @@ import cn.tursom.treediagram.modinterface.ModPath
 import cn.tursom.treediagram.modloader.ClassData
 import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
-import cn.tursom.xml.Setter
+import cn.tursom.xml.Constructor
 import cn.tursom.xml.Xml
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -91,7 +91,7 @@ class AutoLoadMod : BaseMod("在系统启动时自动加载模组") {
 
     @Suppress("unused")
     data class AutoLoadConfig(
-        @Setter("setJar") var jar: HashMap<String, HashSet<String>>
+        @Constructor("setJar") var jar: HashMap<String, HashSet<String>>
     ) {
         fun setJar(element: Element): HashMap<String, HashSet<String>> {
             val map = HashMap<String, HashSet<String>>()

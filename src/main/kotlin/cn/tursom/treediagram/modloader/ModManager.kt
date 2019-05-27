@@ -9,6 +9,7 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
+import kotlin.reflect.jvm.javaField
 
 class ModManager(private val router: SuspendRouter<BaseMod>) {
     private val logger = Logger.getLogger("ModManager")!!
@@ -121,6 +122,8 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         //记得销毁被替代的模组
         removeMod(user, mod)
 
+        modUserField.set(mod, user)
+
         //调用模组的初始化函数
         mod.init(user)
 
@@ -142,47 +145,6 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         lastChangeTime = System.currentTimeMillis()
 
         return mod.modName
-    }
-
-    suspend fun loadMod(configData: ClassData, user: String? = null, rootPath: String? = null): Boolean {
-        // 要加载的类名
-        val className: List<String> = configData.classname!!
-        // 类加载器
-        val myClassLoader: ClassLoader? = try {
-            val file = if (rootPath == null) {
-                File(configData.path)
-            } else {
-                File(rootPath + configData.path!!)
-            }
-            // 如果文件不存在，抛出一个文件不存在异常
-            if (!file.exists()) throw FileNotFoundException()
-            val url = file.toURI().toURL()
-            URLClassLoader(arrayOf(url), Thread.currentThread().contextClassLoader)
-        } catch (e: Exception) {
-            // 从文件加载模组失败，尝试从网络加载模组
-            URLClassLoader(arrayOf(URL(configData.url!!)), Thread.currentThread().contextClassLoader)
-        }
-        // 是否所有的模组都加载成功
-        var allSuccessful = true
-        className.forEach { className1 ->
-            try {
-                // 获取一个指定模组的对象
-                val modClass = myClassLoader!!.loadClass(className1)
-                val modObject = modClass.getConstructor().newInstance() as BaseMod
-                // 加载模组
-                if (user == null)
-                    loadMod(modObject)
-                else {
-                    removeMod(user, modObject)
-                    loadMod(user, modObject)
-                }
-            } catch (e: NoSuchMethodException) {
-                // 如果失败，将标志位置否
-                allSuccessful = false
-            }
-        }
-        lastChangeTime = System.currentTimeMillis()
-        return allSuccessful
     }
 
     /**
@@ -238,7 +200,16 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         lastChangeTime = System.currentTimeMillis()
     }
 
-    private fun addRoute(fullRoute: String, mod: BaseMod) {
+    private suspend fun addRoute(fullRoute: String, mod: BaseMod) {
         router.set(fullRoute, mod)
+    }
+
+    companion object {
+        @JvmStatic
+        private val modUserField = BaseMod::user.javaField!!
+
+        init {
+            modUserField.isAccessible = true
+        }
     }
 }

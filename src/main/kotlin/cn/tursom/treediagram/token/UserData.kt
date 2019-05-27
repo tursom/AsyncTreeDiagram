@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 data class UserData(
     @PrimaryKey @NotNull val username: String,
     @NotNull val password: String,
-    @NotNull @Setter("setLevel") @FieldType("TEXT") @Getter("getLevel") val level: List<String>
+    @NotNull @Constructor("setLevel") @FieldType("TEXT") @Getter("getLevel") val level: List<String>
 ) {
     fun setLevel(level: String): List<String> {
         return Gson().fromJson(level)
