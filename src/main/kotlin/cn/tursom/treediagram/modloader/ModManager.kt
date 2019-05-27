@@ -92,7 +92,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         removeMod(mod)
 
         //调用模组的初始化函数
-        mod.init()
+        mod.init(null)
 
         //将模组的信息加载到系统中
         systemModMap[mod.modName] = mod
@@ -122,7 +122,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         removeMod(user, mod)
 
         //调用模组的初始化函数
-        mod.init()
+        mod.init(user)
 
         //将模组的信息加载到系统中
         val userModMap = (userModMapMap[user] ?: run {

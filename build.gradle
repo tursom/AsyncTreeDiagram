@@ -54,9 +54,6 @@ dependencies {
     // socket.server.nio 需要的netty
     implementation group: "io.netty", name: "netty-all", version: "4.1.33.Final"
 
-    // router
-    implementation "org.bigtesting:routd:1.0.7"
-
     implementation group: 'javax.mail', name: 'mail', version: '1.4.1'
     implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.5.1'
 
@@ -72,4 +69,14 @@ compileTestKotlin {
 
 application {
     mainClassName = "cn.tursom.treediagram.MainKt"
+}
+
+//打包源代码
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
 }

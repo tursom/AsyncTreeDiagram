@@ -3,6 +3,10 @@
 package cn.tursom.tools
 
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
@@ -20,6 +24,18 @@ import java.util.jar.JarFile
  * 如果有超线程技术，则是超线程后的CPU数量
  */
 val cpuNumber = Runtime.getRuntime().availableProcessors()
+
+suspend fun <T> io(block: suspend () -> T): T {
+    return withContext(Dispatchers.IO) { block() }
+}
+
+fun background(block: suspend () -> Unit) {
+    GlobalScope.launch { block() }
+}
+
+suspend fun <T> ui(block: suspend () -> T): T {
+    return withContext(Dispatchers.Main) { block() }
+}
 
 fun getClassName(jarPath: String): List<String> {
     val myClassName = ArrayList<String>()
@@ -93,10 +109,10 @@ fun ByteArray.toHexString(): String? {
         //获取低八位有效值+
         val i: Int = it.toInt() and 0xff
         //将整数转化为16进制
-        var hexString = Integer.toHexString(i)
+        val hexString = Integer.toHexString(i)
         if (hexString.length < 2) {
             //如果是一位的话，补0
-            hexString = "0$hexString"
+            sb.append("0")
         }
         sb.append(hexString)
     }

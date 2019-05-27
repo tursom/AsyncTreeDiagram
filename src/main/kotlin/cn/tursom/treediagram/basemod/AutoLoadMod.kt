@@ -19,8 +19,8 @@ import java.io.File
 @ModPath("AutoLoadMod", "AutoLoadMod/:type", "AutoLoadMod/:type/:jar", "AutoLoadMod/:type/:jar/:className")
 class AutoLoadMod : BaseMod("在系统启动时自动加载模组") {
 
-    override suspend fun init() {
-        super.init()
+    override suspend fun init(user: String?) {
+        super.init(user)
         GlobalScope.launch {
             @Suppress("SENSELESS_COMPARISON")
             while (modManager == null) delay(100)
