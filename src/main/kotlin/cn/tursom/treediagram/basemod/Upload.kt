@@ -1,5 +1,6 @@
 package cn.tursom.treediagram.basemod
 
+import cn.tursom.treediagram.TreeDiagramHttpHandler.registerService
 import cn.tursom.treediagram.modinterface.*
 import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
@@ -16,7 +17,17 @@ import java.io.File
 @AbsPath("upload/:type/:filename", "upload/:filename", "upload")
 @ModPath("upload/:type/:filename", "upload/:filename", "upload")
 @NeedBody(10 * 1024 * 1024)
+@RegisterService
 class Upload : BaseMod("上传文件") {
+
+    override suspend fun receiveMessage(message: Any?): Any? {
+        message as String?
+        return if (message == null) {
+            "$uploadRootPath/system"
+        } else {
+            "$uploadRootPath/$message"
+        }
+    }
 
     override suspend fun handle(uri: String, content: HttpContent): Any {
         val token = content.token

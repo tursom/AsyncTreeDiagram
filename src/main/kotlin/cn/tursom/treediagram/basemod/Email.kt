@@ -30,6 +30,12 @@ import java.util.*
  */
 @ModPath("mail")
 class Email : BaseMod("单发邮件") {
+
+    override suspend fun receiveMessage(message: Any?): Any? {
+        message as EmailData
+        return message.send()
+    }
+
     override suspend fun handle(
         uri: String,
         content: HttpContent
@@ -58,10 +64,6 @@ class Email : BaseMod("单发邮件") {
             cause.printStackTrace()
             "${cause::class.java}: ${cause.message}"
         }
-    }
-
-    companion object {
-        private val gson = Gson()
     }
 }
 

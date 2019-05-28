@@ -1,7 +1,7 @@
 package cn.tursom.treediagram.modloader
 
-import cn.tursom.asynclock.AsyncLockHashMap
-import cn.tursom.asynclock.AsyncLockMap
+import cn.tursom.asynclock.AsyncRWLockAbstractMap
+import cn.tursom.asynclock.ReadWriteLockHashMap
 import cn.tursom.asynclock.WriteLockHashMap
 import cn.tursom.treediagram.modinterface.*
 import cn.tursom.web.router.SuspendRouter
@@ -12,20 +12,13 @@ import kotlin.reflect.jvm.javaField
 class ModManager(private val router: SuspendRouter<BaseMod>) {
     private val logger = Logger.getLogger("ModManager")!!
     private val systemModMap = WriteLockHashMap<String, BaseMod>()
-    private val userModMapMap: AsyncLockHashMap<String, AsyncLockHashMap<String, BaseMod>> = WriteLockHashMap()
+    private val userModMapMap: AsyncRWLockAbstractMap<String, AsyncRWLockAbstractMap<String, BaseMod>> = WriteLockHashMap()
 
     @Volatile
     var lastChangeTime: Long = System.currentTimeMillis()
 
-    val sysModMap: AsyncLockMap<String, BaseMod>
-        get() = systemModMap
-
-    @Suppress("UNCHECKED_CAST")
-    val userModMap: AsyncLockMap<String, AsyncLockMap<String, BaseMod>>
-        get() = userModMapMap as AsyncLockMap<String, AsyncLockMap<String, BaseMod>>
-
     init {
-        //加载系统模组
+        // 加载系统模组
         runBlocking {
             arrayOf(
                 cn.tursom.treediagram.basemod.Echo(),
@@ -116,18 +109,18 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
      * 将模组的注册信息加载进系统中
      */
     suspend fun loadMod(user: String, mod: BaseMod): String {
-        //输出日志信息
+        // 输出日志信息
         logger.info("loading mod: ${mod::class.java.name}\nuser: $user")
 
-        //记得销毁被替代的模组
+        // 记得销毁被替代的模组
         removeMod(user, mod)
 
         modUserField.set(mod, user)
 
-        //调用模组的初始化函数
+        // 调用模组的初始化函数
         mod.init(user)
 
-        //将模组的信息加载到系统中
+        // 将模组的信息加载到系统中
         val userModMap = (userModMapMap.get(user) ?: run {
             val modMap = WriteLockHashMap<String, BaseMod>()
             userModMapMap.set(user, modMap)
@@ -215,6 +208,86 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
 
         init {
             modUserField.isAccessible = true
+        }
+    }
+
+
+    // 模组树部分
+    @Volatile
+    private var cacheTime: Long = 0
+    @Volatile
+    private var cache: String = ""
+    private var userCache = ReadWriteLockHashMap<String, Pair<Long, String>>()
+    @Volatile
+    private var systemTreeCacheTime: Long = 0
+    @Volatile
+    private var systemTreeCache: String = ""
+
+    private suspend fun getSystemTree(): String {
+        if (lastChangeTime < systemTreeCacheTime) {
+            return systemTreeCache
+        }
+        val sb = StringBuilder()
+        sb.append("system\n")
+        val infoMap = HashMap<BaseMod, String>()
+        systemModMap.forEach { t, u ->
+            infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
+        }
+        infoMap.forEach { (t, u) ->
+            sb.append("|- $t$u\n")
+        }
+        systemTreeCache = sb.toString()
+        systemTreeCacheTime = System.currentTimeMillis()
+        return systemTreeCache
+    }
+
+    private suspend fun getUserTree(user: String): String {
+        val sb = StringBuilder()
+        val cachePair = userCache.get(user)
+        if (cachePair != null) {
+            val (time, cache) = cachePair
+            if (time > lastChangeTime) {
+                return cache
+            }
+        }
+        sb.append("$user\n")
+        val infoMap = HashMap<BaseMod, String>()
+        userModMapMap.get(user)?.forEach { t, u ->
+            infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
+        }
+        infoMap.forEach { (t, u) ->
+            sb.append("|- $t$u\n")
+        }
+        val str = sb.toString()
+        userCache.set(user, System.currentTimeMillis() to str)
+        return str
+    }
+
+
+    suspend fun getModTree(user: String?): String {
+        return when (user) {
+            null -> {
+                if (lastChangeTime < cacheTime) return cache
+
+                val sb = StringBuilder()
+                sb.append(getSystemTree())
+                if (!userModMapMap.isNotEmpty()) sb.append("user\n")
+                userModMapMap.forEach { t, u ->
+                    sb.append("|- $t\n")
+                    val infoMap = HashMap<BaseMod, String>()
+                    u.forEach { id, mod ->
+                        infoMap[mod] = (infoMap[mod] ?: "") + "\n|  |  id=$id"
+                    }
+                    infoMap.forEach { (t, u) ->
+                        sb.append("|  |- $t$u\n")
+                    }
+                }
+                cache = sb.toString()
+                cacheTime = System.currentTimeMillis()
+                cache
+            }
+            "system" -> getSystemTree()
+            else -> getUserTree(user)
         }
     }
 }

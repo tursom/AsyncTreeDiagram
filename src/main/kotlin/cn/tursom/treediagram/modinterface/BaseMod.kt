@@ -2,6 +2,8 @@ package cn.tursom.treediagram.modinterface
 
 import cn.tursom.treediagram.ReturnData
 import cn.tursom.treediagram.TreeDiagramHttpHandler
+import cn.tursom.treediagram.TreeDiagramHttpHandler.registerService
+import cn.tursom.treediagram.TreeDiagramHttpHandler.removeService
 import cn.tursom.web.HttpContent
 import com.google.gson.Gson
 import java.io.File
@@ -20,7 +22,7 @@ import kotlin.coroutines.suspendCoroutine
 abstract class BaseMod(
     val description: String = "",
     val help: String = ""
-) {
+) : Service {
     val user: String? = null
 
     /**
@@ -40,6 +42,9 @@ abstract class BaseMod(
      */
     open suspend fun init(user: String?) {
         logger.log(Level.INFO, "mod $modName init by $user")
+        if (javaClass.getAnnotation(RegisterService::class.java) != null) {
+            registerService(user, this)
+        }
     }
 
     /**
@@ -71,6 +76,37 @@ abstract class BaseMod(
      */
     open suspend fun destroy() {
         logger.log(Level.INFO, "mod $modName destroy")
+        if (javaClass.getAnnotation(RegisterService::class.java) != null) {
+            removeService(user, this)
+        }
+    }
+
+    override suspend fun initService(user: String?) {
+        logger.log(Level.INFO, "service $id init")
+    }
+
+    override suspend fun destroyService() {
+        logger.log(Level.INFO, "service $id destroy")
+    }
+
+    override suspend fun getConnection(connection: ModConnection) {
+        connection.close()
+    }
+
+    override suspend fun receiveMessage(message: Any?): Any? = null
+
+    /**
+     * 模组间通讯四大函数
+     */
+    suspend fun sendMessage(user: String?, serviceId: String, message: Any?, timeout: Long = 60_000): Any? {
+        return TreeDiagramHttpHandler.sendMessage(user, serviceId, message, timeout)
+    }
+
+    /**
+     * 模组间通讯四大函数
+     */
+    suspend fun connect(user: String?, serviceId: String): ModConnection? {
+        return TreeDiagramHttpHandler.connect(user, serviceId)
     }
 
     /**
