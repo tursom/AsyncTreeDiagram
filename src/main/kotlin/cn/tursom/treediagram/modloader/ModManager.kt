@@ -1,28 +1,28 @@
 package cn.tursom.treediagram.modloader
 
+import cn.tursom.asynclock.AsyncLockHashMap
+import cn.tursom.asynclock.AsyncLockMap
+import cn.tursom.asynclock.WriteLockHashMap
 import cn.tursom.treediagram.modinterface.*
 import cn.tursom.web.router.SuspendRouter
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.io.FileNotFoundException
-import java.net.URL
-import java.net.URLClassLoader
-import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import kotlin.reflect.jvm.javaField
 
 class ModManager(private val router: SuspendRouter<BaseMod>) {
     private val logger = Logger.getLogger("ModManager")!!
-    private val systemModMap = ConcurrentHashMap<String, BaseMod>()
-    private val userModMapMap: ConcurrentHashMap<String, ConcurrentHashMap<String, BaseMod>> = ConcurrentHashMap()
+    private val systemModMap = WriteLockHashMap<String, BaseMod>()
+    private val userModMapMap: AsyncLockHashMap<String, AsyncLockHashMap<String, BaseMod>> = WriteLockHashMap()
 
     @Volatile
     var lastChangeTime: Long = System.currentTimeMillis()
 
-    val sysModMap: Map<String, BaseMod>
+    val sysModMap: AsyncLockMap<String, BaseMod>
         get() = systemModMap
-    val userModMap: Map<String, Map<String, BaseMod>>
-        get() = userModMapMap
+
+    @Suppress("UNCHECKED_CAST")
+    val userModMap: AsyncLockMap<String, AsyncLockMap<String, BaseMod>>
+        get() = userModMapMap as AsyncLockMap<String, AsyncLockMap<String, BaseMod>>
 
     init {
         //加载系统模组
@@ -51,20 +51,9 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         }
     }
 
-    val systemMod: Set<String>
-        get() {
-            val pathSet = HashSet<String>()
-            systemModMap.forEach { (_: String, u: BaseMod) ->
-                u.routeList.forEach {
-                    pathSet.add(it)
-                }
-            }
-            return pathSet
-        }
-
-    fun getUserMod(user: String?): Set<String>? {
+    suspend fun getSystemMod(): Set<String> {
         val pathSet = HashSet<String>()
-        userModMapMap[user ?: return null]?.forEach { (_: String, u: BaseMod) ->
+        systemModMap.forEach { _: String, u: BaseMod ->
             u.routeList.forEach {
                 pathSet.add(it)
             }
@@ -72,13 +61,23 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         return pathSet
     }
 
-    fun findMod(modName: String, user: String? = null): BaseMod? {
-        val modMap = if (user != null) {
-            userModMapMap[user]
+    suspend fun getUserMod(user: String?): Set<String>? {
+        val pathSet = HashSet<String>()
+        userModMapMap.get(user ?: return null)?.forEach { _: String, u: BaseMod ->
+            u.routeList.forEach {
+                pathSet.add(it)
+            }
+        }
+        return pathSet
+
+    }
+
+    suspend fun findMod(modName: String, user: String? = null): BaseMod? {
+        return if (user != null) {
+            (userModMapMap.get(user) ?: return null).get(modName)
         } else {
-            systemModMap
-        } ?: return null
-        return modMap[modName]
+            systemModMap.get(modName)
+        }
     }
 
     /**
@@ -96,8 +95,9 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         mod.init(null)
 
         //将模组的信息加载到系统中
-        systemModMap[mod.modName] = mod
-        systemModMap[mod.modName.split('.').last()] = mod
+        systemModMap.set(mod.modName, mod)
+        systemModMap.set(mod.modName.split('.').last(), mod)
+
 
         mod.routeList.forEach {
             addRoute("/mod/system/$it", mod)
@@ -128,14 +128,14 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
         mod.init(user)
 
         //将模组的信息加载到系统中
-        val userModMap = (userModMapMap[user] ?: run {
-            val modMap = ConcurrentHashMap<String, BaseMod>()
-            userModMapMap[user] = modMap
+        val userModMap = (userModMapMap.get(user) ?: run {
+            val modMap = WriteLockHashMap<String, BaseMod>()
+            userModMapMap.set(user, modMap)
             modMap
         })
 
-        userModMap[mod.modName] = mod
-        userModMap[mod.simpName] = mod
+        userModMap.set(mod.modName, mod)
+        userModMap.set(mod.simpName, mod)
 
         mod.routeList.forEach {
             addRoute("/mod/user/$user/$it", mod)
@@ -152,17 +152,20 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
      */
     suspend fun removeMod(user: String, mod: BaseMod) {
         logger.info("user $user try remove mod: $mod")
-        val userModMap = userModMapMap[user] ?: return
-        val modObject = userModMap[mod.modName] ?: return
+
+        val userModMap = userModMapMap.get(user) ?: return
+        val modObject = userModMap.get(mod.modName) ?: return
         logger.info("user $user remove mod: $mod")
         try {
             modObject.destroy()
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        userModMap.remove(modObject.modName)
-        if (modObject === userModMap[modObject.modName.split('.').last()])
-            userModMap.remove(modObject.modName.split('.').last())
+        if (userModMap.contains(modObject.modName)) {
+            userModMap.remove(modObject.modName)
+            if (modObject === userModMap.get(modObject.modName.split('.').last()))
+                userModMap.remove(modObject.modName.split('.').last())
+        }
         modObject.routeList.forEach {
             val route = "/mod/user/$user/$it"
             logger.info("try delete route $route")
@@ -179,16 +182,18 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
      */
     suspend fun removeMod(mod: BaseMod) {
         logger.info("try remove system mod: $mod")
-        val modObject = systemModMap[mod.modName] ?: return
+        val modObject = systemModMap.get(mod.modName) ?: return
         logger.info("remove system mod: $mod")
         try {
             modObject.destroy()
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        systemModMap.remove(modObject.modName)
-        if (modObject === systemModMap[modObject.modName.split('.').last()])
-            systemModMap.remove(modObject.modName.split('.').last())
+        if (systemModMap.contains(modObject.modName)) {
+            systemModMap.remove(modObject.modName)
+            if (modObject === systemModMap.get(modObject.modName.split('.').last()))
+                systemModMap.remove(modObject.modName.split('.').last())
+        }
         modObject.routeList.forEach {
             val route = "/mod/system/$it"
             logger.info("try delete route $route")

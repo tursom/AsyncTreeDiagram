@@ -1,5 +1,6 @@
 package cn.tursom.treediagram.basemod
 
+import cn.tursom.tools.background
 import cn.tursom.treediagram.TreeDiagramHttpHandler.modManager
 import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModException
@@ -9,9 +10,7 @@ import cn.tursom.treediagram.token.token
 import cn.tursom.web.HttpContent
 import cn.tursom.xml.Constructor
 import cn.tursom.xml.Xml
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.dom4j.Element
 import java.io.File
 
@@ -21,17 +20,18 @@ class AutoLoadMod : BaseMod("在系统启动时自动加载模组") {
 
     override suspend fun init(user: String?) {
         super.init(user)
-        GlobalScope.launch {
+        background {
+            delay(100)
             @Suppress("SENSELESS_COMPARISON")
-            while (modManager == null) delay(100)
+            while (modManager == null) delay(20)
             File(uploadRootPath).listFiles { it -> it.isDirectory }.forEach { path ->
+                logger.info("自动加载模组正在加载路径：$path")
                 val configXml = File("$path/autoLoad.xml")
                 if (!configXml.exists()) return@forEach
                 val config = Xml.parse<AutoLoadConfig>(configXml)
                 config.jar.forEach forEachConfig@{ (jarName, classes) ->
                     val jarPath = "$path/$jarName"
-
-                    logger.info("auto load mod load jar $jarPath")
+                    logger.info("自动加载模组正在加载路径jar包：$jarPath")
                     cn.tursom.treediagram.modloader.ModLoader.getClassLoader(
                         ClassData(jarPath, jarPath, if (classes.isNotEmpty()) classes.toList() else null),
                         path.name,

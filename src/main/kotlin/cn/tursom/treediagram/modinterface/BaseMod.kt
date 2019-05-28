@@ -1,7 +1,7 @@
 package cn.tursom.treediagram.modinterface
 
 import cn.tursom.treediagram.ReturnData
-import cn.tursom.treediagram.TreeDiagramHttpHandler.fileHandler
+import cn.tursom.treediagram.TreeDiagramHttpHandler
 import cn.tursom.web.HttpContent
 import com.google.gson.Gson
 import java.io.File
@@ -9,6 +9,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.resume
@@ -94,6 +95,19 @@ abstract class BaseMod(
         @Suppress("SpellCheckingInspection")
         @JvmStatic
         val gson = Gson()
+
+        @JvmStatic
+        val fileHandler = run {
+            if (!File(TreeDiagramHttpHandler.config.logPath).exists()) {
+                File(TreeDiagramHttpHandler.config.logPath).mkdirs()
+            }
+            FileHandler(
+                "${TreeDiagramHttpHandler.config.logPath}/${TreeDiagramHttpHandler.config.logFile}%u.%g.xml",
+                TreeDiagramHttpHandler.config.maxLogSize,
+                TreeDiagramHttpHandler.config.logFileCount
+            )
+        }
+
         @JvmStatic
         val logger = run {
             val logger = Logger.getLogger("ModLogger")!!

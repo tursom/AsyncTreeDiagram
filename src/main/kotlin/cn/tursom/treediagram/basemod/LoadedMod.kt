@@ -13,7 +13,7 @@ class LoadedMod : BaseMod("返回已经加载的模组") {
 
     override suspend fun handle(uri: String, content: HttpContent): LoadedModData {
         return LoadedModData(
-            modManager.systemMod,
+            modManager.getSystemMod(),
             modManager.getUserMod(content["user"])
         )
     }

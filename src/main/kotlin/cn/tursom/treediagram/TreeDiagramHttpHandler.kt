@@ -13,11 +13,9 @@ import cn.tursom.xml.ElementName
 import cn.tursom.xml.Xml
 import java.io.File
 import java.io.PrintStream
-import java.util.logging.FileHandler
 
 object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
     private val router = SuspendRouter<BaseMod>()
-    val database = AsyncSqliteHelper("TreeDiagram.db")
     val config = run {
         val configFile = File("config.xml")
         if (!configFile.exists()) {
@@ -28,12 +26,7 @@ object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
         }
         Xml.parse<Config>(configFile)
     }
-    val fileHandler = run {
-        if (!File(config.logPath).exists()) {
-            File(config.logPath).mkdirs()
-        }
-        FileHandler("${config.logPath}/${config.logFile}%u.%g.xml", config.maxLogSize, config.logFileCount)
-    }
+    val database = AsyncSqliteHelper(config.database)
     val modManager = ModManager(router)
 
     suspend fun getRouterTree() = router.suspendToString()
@@ -71,12 +64,14 @@ object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
         @Constructor("setLogPath") val logPath: String = "log",
         @Constructor("setLogFile") val logFile: String = "modLog",
         @Constructor("setMaxLogSize") val maxLogSize: Int = 64 * 1024,
-        @Constructor("setLogFileCount") val logFileCount: Int = 24
+        @Constructor("setLogFileCount") val logFileCount: Int = 24,
+        @Constructor("setDatabase") val database: String = "TreeDiagram.db"
     ) {
         fun setPort(port: String) = port.toIntOrNull() ?: 12345
         fun setLogPath(logPath: String?) = logPath ?: "log"
         fun setLogFile(modLogFile: String?) = modLogFile ?: "modLog"
         fun setMaxLogSize(maxLogSize: String?) = maxLogSize?.toIntOrNull() ?: 64 * 1024
         fun setLogFileCount(logFileCount: String?) = logFileCount?.toIntOrNull() ?: 24
+        fun setDatabase(database: String?) = database ?: "TreeDiagram.db"
     }
 }

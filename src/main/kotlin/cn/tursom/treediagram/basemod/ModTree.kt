@@ -5,6 +5,7 @@ import cn.tursom.treediagram.modinterface.AbsPath
 import cn.tursom.treediagram.modinterface.BaseMod
 import cn.tursom.treediagram.modinterface.ModPath
 import cn.tursom.web.HttpContent
+import jdk.nashorn.internal.objects.NativeArray.forEach
 import java.util.concurrent.ConcurrentHashMap
 
 @AbsPath("modTree", "modTree/:user", "mod", "mod/system", "mod/:user", "mods", "mods/system", "mods/:user")
@@ -20,14 +21,14 @@ class ModTree : BaseMod("返回模组树") {
     @Volatile
     private var systemCache: String = ""
 
-    fun getSystemTree(): String {
+    suspend fun getSystemTree(): String {
         if (modManager.lastChangeTime < systemCacheTime) {
             return systemCache
         }
         val sb = StringBuilder()
         sb.append("system\n")
         val infoMap = HashMap<BaseMod, String>()
-        modManager.sysModMap.forEach { (t, u) ->
+        modManager.sysModMap.forEach { t, u ->
             infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
         }
         infoMap.forEach { (t, u) ->
@@ -38,7 +39,7 @@ class ModTree : BaseMod("返回模组树") {
         return systemCache
     }
 
-    fun getUserTree(user: String): String {
+    suspend fun getUserTree(user: String): String {
         val sb = StringBuilder()
         val cachePair = userCache[user]
         if (cachePair != null) {
@@ -49,7 +50,7 @@ class ModTree : BaseMod("返回模组树") {
         }
         sb.append("$user\n")
         val infoMap = HashMap<BaseMod, String>()
-        modManager.userModMap[user]?.forEach { (t, u) ->
+        modManager.userModMap.get(user)?.forEach { t, u ->
             infoMap[u] = (infoMap[u] ?: "") + "\n|  id=$t"
         }
         infoMap.forEach { (t, u) ->
@@ -68,12 +69,12 @@ class ModTree : BaseMod("返回模组树") {
 
                 val sb = StringBuilder()
                 sb.append(getSystemTree())
-                if (modManager.userModMap.isNotEmpty()) sb.append("user\n")
-                modManager.userModMap.forEach { (t, u) ->
+                if (!modManager.userModMap.isNotEmpty()) sb.append("user\n")
+                modManager.userModMap.forEach { t, u ->
                     sb.append("|- $t\n")
                     val infoMap = HashMap<BaseMod, String>()
-                    u.forEach { (t, u) ->
-                        infoMap[u] = (infoMap[u] ?: "") + "\n|  |  id=$t"
+                    u.forEach { id, mod ->
+                        infoMap[mod] = (infoMap[mod] ?: "") + "\n|  |  id=$id"
                     }
                     infoMap.forEach { (t, u) ->
                         sb.append("|  |- $t$u\n")
