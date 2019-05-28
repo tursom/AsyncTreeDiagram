@@ -2,6 +2,7 @@ package cn.tursom.treediagram.modinterface
 
 import cn.tursom.treediagram.ReturnData
 import cn.tursom.treediagram.TreeDiagramHttpHandler
+import cn.tursom.treediagram.TreeDiagramHttpHandler.fileHandler
 import cn.tursom.treediagram.TreeDiagramHttpHandler.registerService
 import cn.tursom.treediagram.TreeDiagramHttpHandler.removeService
 import cn.tursom.web.HttpContent
@@ -133,23 +134,10 @@ abstract class BaseMod(
         val gson = Gson()
 
         @JvmStatic
-        val fileHandler = run {
-            if (!File(TreeDiagramHttpHandler.config.logPath).exists()) {
-                File(TreeDiagramHttpHandler.config.logPath).mkdirs()
-            }
-            FileHandler(
-                "${TreeDiagramHttpHandler.config.logPath}/${TreeDiagramHttpHandler.config.logFile}%u.%g.xml",
-                TreeDiagramHttpHandler.config.maxLogSize,
-                TreeDiagramHttpHandler.config.logFileCount
-            )
-        }
+        val fileHandler = TreeDiagramHttpHandler.fileHandler
 
         @JvmStatic
-        val logger = run {
-            val logger = Logger.getLogger("ModLogger")!!
-            logger.addHandler(fileHandler)
-            logger
-        }
+        val logger = TreeDiagramHttpHandler.logger
 
         @JvmStatic
         val uploadRootPath = "upload/"

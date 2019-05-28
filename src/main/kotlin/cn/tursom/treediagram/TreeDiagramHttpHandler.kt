@@ -16,6 +16,8 @@ import cn.tursom.xml.Xml
 import kotlinx.coroutines.withTimeout
 import java.io.File
 import java.io.PrintStream
+import java.util.logging.FileHandler
+import java.util.logging.Logger
 
 object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
     private val serviceMap = ReadWriteLockHashMap<String?, AsyncRWLockAbstractMap<String, Service>>()
@@ -29,6 +31,26 @@ object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
             }
         }
         Xml.parse<Config>(configFile)
+    }
+
+
+    @JvmStatic
+    val fileHandler = run {
+        if (!File(TreeDiagramHttpHandler.config.logPath).exists()) {
+            File(TreeDiagramHttpHandler.config.logPath).mkdirs()
+        }
+        FileHandler(
+            "${config.logPath}/${config.logFile}%u.%g.xml",
+            config.maxLogSize,
+            config.logFileCount
+        )
+    }
+
+    @JvmStatic
+    val logger = run {
+        val logger = Logger.getLogger("ModLogger")!!
+        logger.addHandler(fileHandler)
+        logger
     }
     val database = AsyncSqliteHelper(config.database)
     val modManager = ModManager(router)
