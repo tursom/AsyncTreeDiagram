@@ -11,8 +11,9 @@ class ModConnection(
         sendChannel.send(message)
     }
 
-    suspend fun recv(): Any {
-        return recvChannel.receive()
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <T> recv(): T {
+        return recvChannel.receive() as T
     }
 
     fun close() {

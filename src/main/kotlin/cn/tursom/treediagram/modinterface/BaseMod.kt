@@ -2,7 +2,6 @@ package cn.tursom.treediagram.modinterface
 
 import cn.tursom.treediagram.ReturnData
 import cn.tursom.treediagram.TreeDiagramHttpHandler
-import cn.tursom.treediagram.TreeDiagramHttpHandler.fileHandler
 import cn.tursom.treediagram.TreeDiagramHttpHandler.registerService
 import cn.tursom.treediagram.TreeDiagramHttpHandler.removeService
 import cn.tursom.web.HttpContent
@@ -12,9 +11,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.logging.FileHandler
 import java.util.logging.Level
-import java.util.logging.Logger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
