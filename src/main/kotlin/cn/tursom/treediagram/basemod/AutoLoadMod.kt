@@ -24,7 +24,7 @@ class AutoLoadMod : BaseMod("在系统启动时自动加载模组") {
             delay(100)
             @Suppress("SENSELESS_COMPARISON")
             while (modManager == null) delay(20)
-            File(uploadRootPath).listFiles { it -> it.isDirectory }.forEach { path ->
+            File(uploadRootPath).listFiles { it -> it.isDirectory }?.forEach { path ->
                 logger.info("自动加载模组正在加载路径：$path")
                 val configXml = File("$path/autoLoad.xml")
                 if (!configXml.exists()) return@forEach
