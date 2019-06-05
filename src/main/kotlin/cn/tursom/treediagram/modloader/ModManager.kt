@@ -271,7 +271,7 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
 
                 val sb = StringBuilder()
                 sb.append(getSystemTree())
-                if (!userModMapMap.isNotEmpty()) sb.append("user\n")
+                if (userModMapMap.isNotEmpty()) sb.append("user\n")
                 userModMapMap.forEach { t, u ->
                     sb.append("|- $t\n")
                     val infoMap = HashMap<BaseMod, String>()
