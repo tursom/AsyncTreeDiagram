@@ -5,7 +5,7 @@
 
 构建docker镜像
 ```sh
-docker build -t async-tree-diagram https://github.com/tursom/AsyncTreeDiagram/releases/download/1.0/AsyncTreeDiagramDocker.tar.gz
+docker build -t async-tree-diagram https://github.com/tursom/AsyncTreeDiagram/releases/download/0.2/AsyncTreeDiagramDocker.tar.gz
 ```
 运行docker镜像
 ```sh
