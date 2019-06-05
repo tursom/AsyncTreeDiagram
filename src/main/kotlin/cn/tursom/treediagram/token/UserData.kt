@@ -8,7 +8,6 @@ import cn.tursom.tools.fromJson
 import cn.tursom.tools.sha256
 import cn.tursom.treediagram.TreeDiagramHttpHandler
 import com.google.gson.Gson
-import kotlinx.coroutines.runBlocking
 
 @Suppress("unused")
 @TableName("users")

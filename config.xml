@@ -1,5 +1,5 @@
 <config>
-    <port>12345</port>
+    <port>12346</port>
     <logPath>log</logPath>
     <modLogFile>modLog</modLogFile>
     <maxLogSize>65536</maxLogSize>
