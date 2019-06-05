@@ -11,3 +11,7 @@ docker build -t async-tree-diagram https://github.com/tursom/AsyncTreeDiagram/re
 ```sh
 docker run -p 12345:12345 -v upload:/www/upload -v TreeDiagram.db:/www/TreeDiagram.db -v log:/www/log async-tree-diagram
 ```
+或者使用官方镜像
+```sh
+docker run -p 12345:12345 -v upload:/www/upload -v TreeDiagram.db:/www/TreeDiagram.db -v log:/www/log tursom/async-tree-diagram
+```
