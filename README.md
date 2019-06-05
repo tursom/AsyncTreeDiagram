@@ -9,5 +9,5 @@ docker build -t async-tree-diagram https://github.com/tursom/AsyncTreeDiagram/re
 ```
 运行docker镜像
 ```sh
-docker run -it --rm -p 12345:12345 --name my-running-app async-tree-diagram
+docker run -p 12345:12345 -v upload:/www/upload -v TreeDiagram.db:/www/TreeDiagram.db -v log:/www/log async-tree-diagram
 ```
