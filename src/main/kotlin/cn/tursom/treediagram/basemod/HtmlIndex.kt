@@ -41,8 +41,9 @@ class HtmlIndex : BaseMod() {
 
     override suspend fun handle(uri: String, content: HttpContent): String {
         if (cacheTime < routeLastChangeTime) {
-            val stringBuilder = StringBuilder()
+            val stringBuilder = StringBuilder("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>index</title></head><body>")
             toString(rootRoute, stringBuilder, "")
+            stringBuilder.append("</body></html>")
             cache = stringBuilder.toString()
             cacheTime = System.currentTimeMillis()
         }
@@ -51,9 +52,7 @@ class HtmlIndex : BaseMod() {
 
     override suspend fun handle(content: HttpContent) {
         content.setResponseHeader("content-type", "text/html; charset=UTF-8")
-        content.write("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>index</title></head><body>")
         content.write(handle(content.uri, content))
-        content.write("</body></html>")
         content.finish()
     }
 }
