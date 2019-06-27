@@ -37,7 +37,8 @@ class ModManager(private val router: SuspendRouter<BaseMod>) {
                 cn.tursom.treediagram.basemod.ModTree(),
                 cn.tursom.treediagram.basemod.ModRemover(),
                 cn.tursom.treediagram.basemod.Download(),
-                cn.tursom.treediagram.basemod.AutoLoadMod()
+                cn.tursom.treediagram.basemod.AutoLoadMod(),
+                cn.tursom.treediagram.basemod.HtmlIndex()
             ).forEach {
                 loadMod(it)
             }

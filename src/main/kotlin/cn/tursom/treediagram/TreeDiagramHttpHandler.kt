@@ -55,6 +55,11 @@ object TreeDiagramHttpHandler : HttpHandler<NettyHttpContent> {
     val database = AsyncSqliteHelper(config.database)
     val modManager = ModManager(router)
 
+    val rootRoute
+        get() = router.root
+    val routeLastChangeTime
+        get() = router.lashChangeTime
+
     /**
      * 模组间通讯四大函数
      */
